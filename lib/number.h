@@ -5,6 +5,11 @@
 
 struct uint2022_t {
     // implement
+    uint32_t big_uint[70] = {};
+    // каждое число от 0 до 999999999, 9 цифр кодирует
+    // 0 <= big_uint[i] < 1e9
+    uint8_t start = 69;
+    const uint8_t end = 70;
 };
 
 static_assert(sizeof(uint2022_t) <= 300, "Size of uint2022_t must be no higher than 300 bytes");
