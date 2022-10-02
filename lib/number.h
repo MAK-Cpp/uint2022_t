@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cmath>
 
+#define _ << ' ' <<
 
 struct uint2022_t {
     uint32_t big_uint[68] = {};
@@ -32,5 +33,7 @@ uint2022_t operator/(const uint2022_t& lhs, const uint2022_t& rhs);
 bool operator==(const uint2022_t& lhs, const uint2022_t& rhs);
 
 bool operator!=(const uint2022_t& lhs, const uint2022_t& rhs);
+
+bool operator>(const uint2022_t& lhs, const uint2022_t& rhs);
 
 std::ostream& operator<<(std::ostream& stream, const uint2022_t& value);

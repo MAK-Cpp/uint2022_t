@@ -26,7 +26,6 @@ uint2022_t from_string(const char* buff) {
     // первый блок - [0; buff % 9 - 1], остальные так же как 
     // до этого
     uint2022_t ans;
-    std::cout << ans.big_uint[ans.start] << std::endl;
     uint32_t len = 0;
     for (uint32_t count = 0; buff[count] != '\0'; ++count) {
         len++;
@@ -37,28 +36,80 @@ uint2022_t from_string(const char* buff) {
     uint32_t remainder = len % 9;
     ans.start = ans.end - (len + 9 - 1) / 9;
 
-    std::cout << len << ' ' << ans.start << std::endl;
-
     for (uint32_t i = 0, block_id = ans.start, i_remainder = 0; buff[i] != '\0'; ++i, i_remainder++) {
-        std::cout << i << ' ' << buff[i] << ' ' << block_id << std::endl;
         if (i_remainder == 9) {
             i_remainder = 0;
         }
-        if (i_remainder == remainder) {
+        if (i != 0 && i_remainder == remainder) {
             block_id++;
         }
         ans.big_uint[block_id] = ans.big_uint[block_id] * 10 + (buff[i] - '0');
-        std::cout << ans.big_uint[block_id] << std::endl;
+    }
+    if (ans > KMaxOfStruct || ans == KMaxOfStruct) {
+        errorExit();
     }
     return ans;
 }
 
 uint2022_t operator+(const uint2022_t& lhs, const uint2022_t& rhs) {
-    return uint2022_t();
+    uint2022_t ans;
+    ans.start = std::min(lhs.start, rhs.start);
+    for (uint32_t i = ans.end - 1; i > ans.start; i--) {
+        ans.big_uint[i] += lhs.big_uint[i] + rhs.big_uint[i];
+        if (i > 0 && ans.big_uint[i] > KBaseOfNumericSystem) {
+            ans.big_uint[i - 1]++;
+            ans.big_uint[i] -= KBaseOfNumericSystem;
+            if (i == ans.start) {
+                ans.start--;
+            }
+        }
+    }
+    if (ans.start == 0) {
+        uint32_t i = 0;
+        ans.big_uint[i] += lhs.big_uint[i] + rhs.big_uint[i];
+        if (i > 0 && ans.big_uint[i] > KBaseOfNumericSystem) {
+            ans.big_uint[i - 1]++;
+            ans.big_uint[i] -= KBaseOfNumericSystem;
+            if (i == ans.start) {
+                ans.start--;
+            }
+        }
+    }
+    if (ans > KMaxOfStruct || ans == KMaxOfStruct) {
+        return ans - KMaxOfStruct;
+    }
+    return ans;
 }
 
 uint2022_t operator-(const uint2022_t& lhs, const uint2022_t& rhs) {
-    return uint2022_t();
+    uint2022_t ans;
+    if (lhs > rhs) {
+        ans.start = lhs.start;
+        for (uint32_t i = ans.start; i < ans.end; ++i) {
+            ans.big_uint[i] = lhs.big_uint[i];
+            if (ans.big_uint[i] >= rhs.big_uint[i]) {
+                ans.big_uint[i] -= rhs.big_uint[i];
+            } else {
+                uint32_t j = i - 1;
+                while (j > 0 && ans.big_uint[j] == 0) {
+                    j--;
+                }
+                ans.big_uint[j++]--;
+                while (j < i) {
+                    ans.big_uint[j++] = KBaseOfNumericSystem - 1;
+                }
+                ans.big_uint[i] = (KBaseOfNumericSystem - rhs.big_uint[i]) + ans.big_uint[i];
+            }
+            if (ans.big_uint[ans.start] == 0) {
+            ans.start++;
+        }
+        }
+        return ans;
+    } else if (lhs == rhs) {
+        return ans;
+    } else {
+        return KMaxOfStruct - (rhs - lhs);
+    }
 }
 
 uint2022_t operator*(const uint2022_t& lhs, const uint2022_t& rhs) {
@@ -74,10 +125,38 @@ uint2022_t operator/(const uint2022_t& lhs, const uint2022_t& rhs) {
 }
 
 bool operator==(const uint2022_t& lhs, const uint2022_t& rhs) {
-    return false;
+    if (lhs.start != rhs.start) {
+        return false;
+    }
+    for (uint32_t i = lhs.start; i < lhs.end; ++i) {
+        if (lhs.big_uint[i] != rhs.big_uint[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool operator!=(const uint2022_t& lhs, const uint2022_t& rhs) {
+    if (lhs.start != rhs.start) {
+        return true;
+    }
+    for (uint32_t i = lhs.start; i < lhs.end; ++i) {
+        if (lhs.big_uint[i] != rhs.big_uint[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool operator>(const uint2022_t& lhs, const uint2022_t& rhs) {
+    if (lhs.start != rhs.start) {
+        return lhs.start < rhs.start;
+    }
+    for (uint32_t i = lhs.start; i < lhs.end; ++i) {
+        if (lhs.big_uint[i] != rhs.big_uint[i]) {
+            return lhs.big_uint[i] > rhs.big_uint[i];
+        }
+    }
     return false;
 }
 
@@ -86,14 +165,27 @@ std::ostream& operator<<(std::ostream& stream, const uint2022_t& value) {
         if (i != value.start) {
             if (value.big_uint[i] >= 1e8) {
                 stream << value.big_uint[i];
+                // stream << std::endl;
             } else {
-                for (int i = log10(value.big_uint[i]) + 1; i < 9; ++i) {
+                uint32_t num_of_len = 1;
+                uint32_t len = 1;
+                while (num_of_len < value.big_uint[i]) {
+                    num_of_len *= 10;
+                    len++;
+                }
+                if (value.big_uint[i] != num_of_len) {
+                    len--;
+                }
+                // std::cout << len << std::endl;
+                for (uint32_t i = 0; i < 9 - len; ++i) {
                     stream << 0;
                 }
                 stream << value.big_uint[i];
+                // stream << std::endl;
             }
         } else {
             stream << value.big_uint[i];
+            // stream << std::endl;
         }
     }
     return stream;
