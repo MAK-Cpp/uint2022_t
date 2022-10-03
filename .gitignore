@@ -33,5 +33,17 @@
 
 *.py
 
+CTestTestfile.cmake
+Makefile
+cmake_install.cmake
+
 build/
 .vscode/
+bin/
+Testing/
+_deps/
+tests/
+
+lib/CMakeFiles
+lib/cmake_install.cmake
+lib/Makefile

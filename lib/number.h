@@ -12,7 +12,11 @@ struct uint2022_t {
     // 0 <= big_uint[i] < 1e9
 
     uint32_t start = 67;
+    // эксперементальным путем получено то, что log10(2^2022) = 609 ->
+    // нужно 68 блоков по 9 цифр чтобы закодировать число
     const uint32_t end = 68;
+
+    
     
 };
 
@@ -27,6 +31,8 @@ uint2022_t operator+(const uint2022_t& lhs, const uint2022_t& rhs);
 uint2022_t operator-(const uint2022_t& lhs, const uint2022_t& rhs);
 
 uint2022_t operator*(const uint2022_t& lhs, const uint2022_t& rhs);
+
+uint2022_t operator*(const uint2022_t& lhs, const uint32_t& rhs);
 
 uint2022_t operator/(const uint2022_t& lhs, const uint2022_t& rhs);
 
