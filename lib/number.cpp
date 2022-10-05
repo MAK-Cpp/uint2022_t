@@ -107,6 +107,9 @@ uint2022_t operator+(const uint2022_t& lhs, const uint2022_t& rhs) {
     while ((ans.big_uint[ans.first_non_zero_bit / 8] & kBitByID[(ans.first_non_zero_bit & 7)]) == 0 && ans.first_non_zero_bit > 0) {
         ans.first_non_zero_bit--;
     }
+    if (ans.first_non_zero_bit >= 2022) {
+        errorExit();
+    }
     return ans;
 }
 
@@ -128,28 +131,23 @@ uint2022_t operator*(const uint2022_t& lhs, const uint2022_t& rhs) {
             uint16_t rezult = reverseBlock(lhs.big_uint[lhs_block_id]) * reverseBlock(rhs.big_uint[rhs_block_id]) + razryad + reverseBlock(ans.big_uint[lhs_block_id + rhs_block_id]);
             ans.big_uint[lhs_block_id + rhs_block_id] = reverseBlock((rezult & 255));
             razryad = rezult / 256;
-            // std::cout << "operator*\n";
-            // std::cout << lhs _ rhs << ent;
-            // std::printf("lhs_block_id = %u, rhs_block_id = %u, rezult = %u, ans.big_uint[lhs_block_id + rhs_block_id] = %u, razryad = %u \n", lhs_block_id, rhs_block_id, rezult, ans.big_uint[lhs_block_id + rhs_block_id], razryad);
-            // std::cout << lhs_block_id _ rhs_blocsk_id _ rezult _ (uint16_t)ans.big_uint[lhs_block_id + rhs_block_id] _ (uint16_t)razryad << ent;
         }
-        // std::printf("check 1\n");
         if (razryad != 0) {
             if (lhs_block_id + rhs.first_non_zero_bit / 8 + 1 >= 2022) {
                 errorExit();
             }
             ans.big_uint[lhs_block_id + rhs.first_non_zero_bit / 8 + 1] = reverseBlock(razryad);
         } 
-        // std::printf("check 2\n");
     }
     ans.first_non_zero_bit = ans.big_uint.size() * 8 - 1;
-    // std::printf("first non zero bit in ans = %u \n", ans.first_non_zero_bit);
     while (ans.big_uint[ans.first_non_zero_bit / 8] == 0 && ans.first_non_zero_bit > 7) {
-        // std::printf("ans.big_uint[first non zero bit / 8] = %u, first non zero bit = %u \n", ans.big_uint[ans.first_non_zero_bit / 8], ans.first_non_zero_bit);
         ans.first_non_zero_bit -= 8;
     }
     while ((ans.big_uint[ans.first_non_zero_bit / 8] & kBitByID[(ans.first_non_zero_bit & 7)]) == 0 && ans.first_non_zero_bit > 0) {
         ans.first_non_zero_bit--;
+    }
+    if (ans.first_non_zero_bit >= 2022) {
+        errorExit();
     }
     /*
     uint16_t maximum_bit = lhs.first_non_zero_bit + rhs.first_non_zero_bit;

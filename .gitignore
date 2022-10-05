@@ -41,10 +41,8 @@ Testing/
 number.dir/
 .vscode/
 _deps/
+tests/
 
 bin/CMakeFiles
 lib/CMakeFiles
-tests/CMakeFiles
 CTestTestfile.cmake
-tests/number_tests[1]_tests.cmake
-tests/number_tests[1]_include.cmake
