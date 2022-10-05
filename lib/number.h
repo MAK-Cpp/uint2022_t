@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector> 
+#include <ctime>
 
 #define _ << ' ' <<
 #define ent '\n'
