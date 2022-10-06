@@ -214,7 +214,6 @@ std::pair <uint2022_t, uint2022_t> operator%(const uint2022_t& lhs, const uint20
 }
 
 bool operator==(const uint2022_t& lhs, const uint2022_t& rhs) {
-    return true;
     if (lhs.first_non_zero_bit != rhs.first_non_zero_bit) {
         return false;
     }

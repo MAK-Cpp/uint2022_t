@@ -9,7 +9,7 @@ class ConvertingTestsSuite : public testing::TestWithParam<std::tuple<uint32_t, 
 TEST_P(ConvertingTestsSuite, EqualTest) {
     uint2022_t a = from_uint(std::get<0>(GetParam()));
     uint2022_t b = from_string(std::get<1>(GetParam()));
-    std::cout << a << ent << b << ent;
+    // std::cout << a << ent << b << ent;
     if(std::get<2>(GetParam()))
         ASSERT_EQ(a,b) << std::get<0>(GetParam()) << " == " << std::get<1>(GetParam());
     else
