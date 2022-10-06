@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector> 
 #include <ctime>
+#include <stack>
 
 #define _ << ' ' <<
 #define ent '\n'
@@ -11,6 +12,7 @@
 struct uint2022_t {
     // будем хранить число справа налево, т.е. чем больше
     // block_id, тем больше число
+    // 123 = 01111011 -> big_uint[0] = 11011110
     std::vector<uint8_t> big_uint;
 
     uint16_t len_in_decimal;
@@ -61,7 +63,13 @@ uint2022_t operator-(const uint2022_t& lhs, const uint2022_t& rhs);
 
 uint2022_t operator*(const uint2022_t& lhs, const uint2022_t& rhs);
 
+uint2022_t operator^(const uint2022_t& lhs, const uint32_t& rhs);
+
+uint2022_t operator<<(const uint2022_t& value, const uint16_t& len);
+
 uint2022_t operator/(const uint2022_t& lhs, const uint2022_t& rhs);
+
+uint2022_t operator%(const uint2022_t& lhs, const uint2022_t& rhs);
 
 bool operator==(const uint2022_t& lhs, const uint2022_t& rhs);
 
