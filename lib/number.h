@@ -5,6 +5,7 @@
 #include <vector> 
 #include <ctime>
 #include <stack>
+#include <algorithm>
 
 #define _ << ' ' <<
 #define ent '\n'
@@ -15,17 +16,11 @@ struct uint2022_t {
     // 123 = 01111011 -> big_uint[0] = 11011110
     std::vector<uint8_t> big_uint;
 
-    uint16_t len_in_decimal;
     uint16_t first_non_zero_bit;
 
     uint2022_t() {
         big_uint.resize(253, 0);
-        len_in_decimal = 1;
         first_non_zero_bit = 0;
-    }
-
-    uint16_t getCountOfBlocks() {
-        return first_non_zero_bit / 8;
     }
     /*
     253 блока по 8 бит = 2024 бит -> 0 <= first_non_zero_bit <= 2023
@@ -69,7 +64,7 @@ uint2022_t operator<<(const uint2022_t& value, const uint16_t& len);
 
 uint2022_t operator/(const uint2022_t& lhs, const uint2022_t& rhs);
 
-uint2022_t operator%(const uint2022_t& lhs, const uint2022_t& rhs);
+std::pair <uint2022_t, uint2022_t> operator%(const uint2022_t& lhs, const uint2022_t& rhs);
 
 bool operator==(const uint2022_t& lhs, const uint2022_t& rhs);
 

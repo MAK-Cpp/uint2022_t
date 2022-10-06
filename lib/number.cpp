@@ -13,15 +13,6 @@ void errorExit(int error = -1) {
     }
 }
 
-void vrem_print(const uint2022_t& value) {
-    std::cout << "TIME PRINT: ";
-    for (int16_t i = value.first_non_zero_bit; i >= 0; i--) {
-        std::cout << ((value.big_uint[(i >> 3)] & kBitByID[(i & 7)]) == kBitByID[(i & 7)]);
-    }
-    std::cout << ent;
-}
-
-
 uint8_t reverseBlock(const uint8_t& block) {
     uint8_t ans = 0;
     for (uint8_t i = 0; i < 8; ++i) {
@@ -42,7 +33,7 @@ void deleteFirstZeroBits(uint2022_t& value) {
         value.first_non_zero_bit--;
     }
     if (value.first_non_zero_bit >= 2022) {
-        std::cout << "Delete First Zero Bits \n";
+        // std::cout << "Delete First Zero Bits \n";
         errorExit();
     }
 }
@@ -52,14 +43,15 @@ uint2022_t from_uint(uint32_t i) {
     if (i == 0) {
         return ans;
     }
-    for (;i > 0; i = (i >> 1), ans.first_non_zero_bit++) {
-        if (i & 1 == 1) {
-            ans.big_uint[(ans.first_non_zero_bit >> 3)] += kBitByID[ans.first_non_zero_bit & 7];
-        }
+    int16_t block_id = 0;
+    for (;i > 0; i = (i >> 8), block_id++) {
+        ans.big_uint[block_id] = reverseBlock((i & 255));
     }
-    ans.first_non_zero_bit--;
-    ans.len_in_decimal = (uint16_t)log10(i) + 1;
-
+    block_id--;
+    ans.first_non_zero_bit = block_id * 8 + 7;
+    while ((ans.big_uint[block_id] & kBitByID[(ans.first_non_zero_bit & 7)]) == 0) {
+        ans.first_non_zero_bit--;
+    }
     return ans;
 }
 
@@ -67,9 +59,7 @@ uint2022_t from_string(const char* buff) {
     uint2022_t ans;
     const uint2022_t base = from_uint(10);
     for (uint16_t i = 0; buff[i] != '\0'; ++i) {
-        uint2022_t add_number = from_uint(buff[i] - '0');
-        ans = ans * base + add_number;
-        ans.len_in_decimal++;
+        ans = ans * base + from_uint(buff[i] - '0');;
     }
     return ans;
 }
@@ -92,7 +82,7 @@ uint2022_t operator+(const uint2022_t& lhs, const uint2022_t& rhs) {
 
 uint2022_t operator-(const uint2022_t& lhs, const uint2022_t& rhs) {
     if (rhs > lhs) {
-        std::cout << "OPERATOR - ";
+        // std::cout << "OPERATOR - ";
         errorExit();
     }
     uint2022_t ans;
@@ -121,7 +111,7 @@ uint2022_t operator-(const uint2022_t& lhs, const uint2022_t& rhs) {
 uint2022_t operator*(const uint2022_t& lhs, const uint2022_t& rhs) {
     uint2022_t ans;
     if (lhs.first_non_zero_bit + rhs.first_non_zero_bit >= 2022) {
-        std::cout << "OPERATOR * ";
+        // std::cout << "OPERATOR * ";
         errorExit();
     }
     for (uint16_t lhs_block_id = 0; lhs_block_id <= (lhs.first_non_zero_bit >> 3); ++lhs_block_id) {
@@ -196,12 +186,40 @@ uint2022_t operator/(const uint2022_t& lhs, const uint2022_t& rhs) {
     return ans;
 }
 
+
+std::pair <uint2022_t, uint2022_t> operator%(const uint2022_t& lhs, const uint2022_t& rhs) {
+    uint2022_t ans;
+    if (rhs > lhs) {
+        return {ans, lhs};
+    } else if (rhs == lhs) {
+        return {from_uint(1), ans};
+    } else if (rhs == from_uint(1)) {
+        return {lhs, ans};
+    }
+    uint2022_t delt = lhs;
+    while (delt.first_non_zero_bit >= rhs.first_non_zero_bit) {
+        
+        uint16_t ans_bit_id = (delt.first_non_zero_bit - rhs.first_non_zero_bit);
+        if ((rhs << ans_bit_id) > delt) {
+            if (ans_bit_id == 0) {
+                break;
+            }
+            ans_bit_id--;
+        }
+        ans.big_uint[(ans_bit_id >> 3)] += kBitByID[(ans_bit_id & 7)];
+        delt = delt - (rhs << ans_bit_id);
+    }
+    deleteFirstZeroBits(ans);
+    return {ans, delt};
+}
+
 bool operator==(const uint2022_t& lhs, const uint2022_t& rhs) {
+    return true;
     if (lhs.first_non_zero_bit != rhs.first_non_zero_bit) {
         return false;
     }
-    for (int16_t bit_id = lhs.first_non_zero_bit; bit_id >= 0; bit_id--) {
-        if ((lhs.big_uint[(bit_id >> 3)] & kBitByID[(bit_id & 7)]) != (rhs.big_uint[(bit_id >> 3)] & kBitByID[(bit_id & 7)])) {
+    for (int16_t block_id = (lhs.first_non_zero_bit >> 3); block_id >= 0; block_id--) {
+        if (lhs.big_uint[block_id] != rhs.big_uint[block_id]) {
             return false;
         }
     }
@@ -212,8 +230,8 @@ bool operator!=(const uint2022_t& lhs, const uint2022_t& rhs) {
     if (lhs.first_non_zero_bit != rhs.first_non_zero_bit) {
         return true;
     }
-    for (int16_t bit_id = lhs.first_non_zero_bit; bit_id >= 0; bit_id--) {
-        if ((lhs.big_uint[(bit_id >> 3)] & kBitByID[(bit_id & 7)]) != (rhs.big_uint[(bit_id >> 3)] & kBitByID[(bit_id & 7)])) {
+    for (int16_t block_id = (lhs.first_non_zero_bit >> 3); block_id >= 0; block_id--) {
+        if (lhs.big_uint[block_id] != rhs.big_uint[block_id]) {
             return true;
         }
     }
@@ -224,9 +242,9 @@ bool operator>(const uint2022_t& lhs, const uint2022_t& rhs) {
     if (lhs.first_non_zero_bit != rhs.first_non_zero_bit) {
         return lhs.first_non_zero_bit > rhs.first_non_zero_bit;
     }
-    for (int16_t bit_id = lhs.first_non_zero_bit; bit_id >= 0; bit_id--) {
-        if ((lhs.big_uint[(bit_id >> 3)] & kBitByID[(bit_id & 7)]) != (rhs.big_uint[(bit_id >> 3)] & kBitByID[(bit_id & 7)])) {
-            return (lhs.big_uint[(bit_id >> 3)] & kBitByID[(bit_id & 7)]) > (rhs.big_uint[(bit_id >> 3)] & kBitByID[(bit_id & 7)]);
+    for (int16_t block_id = (lhs.first_non_zero_bit >> 3); block_id >= 0; block_id--) {
+        if (lhs.big_uint[block_id] != rhs.big_uint[block_id]) {
+            return reverseBlock(lhs.big_uint[block_id]) > reverseBlock(rhs.big_uint[block_id]);
         }
     }
     return false;
@@ -241,13 +259,18 @@ std::ostream& operator<<(std::ostream& stream, const uint2022_t& value) {
         }
     }
     else {
+        const uint2022_t zero;
+        if (value == zero) {
+            stream << 0;
+            return stream;
+        }
         uint2022_t value_copy = value;
         const uint2022_t base_ans = from_string("1000000000000000000");
-        const uint2022_t zero;
         std::stack <uint64_t> ans;
         while (value_copy > zero) {
-            uint2022_t next_value = value_copy / base_ans;
-            uint2022_t cif = value_copy - next_value * base_ans;
+            std::pair <uint2022_t, uint2022_t> get_ans_in_pair = value_copy % base_ans;
+            uint2022_t next_value = get_ans_in_pair.first;
+            uint2022_t cif = get_ans_in_pair.second;
             value_copy = next_value;
             uint64_t add = 0;
             for (int16_t i = (cif.first_non_zero_bit >> 3); i >= 0; --i) {
@@ -255,8 +278,25 @@ std::ostream& operator<<(std::ostream& stream, const uint2022_t& value) {
             }
             ans.push(add);
         }
+        bool is_first = true;
+        uint64_t len_of_num = 100000000000000000;
         while (!ans.empty()) {
-            stream << ans.top();
+            if (is_first) {
+                stream << ans.top();
+                is_first = false;
+            } else {
+                if (ans.top() >= len_of_num) {
+                    stream << ans.top();
+                } else {
+                    while (ans.top() < len_of_num) {
+                        stream << 0;
+                        len_of_num /= 10;
+                    }
+                    stream << ans.top();
+                    len_of_num = 100000000000000000;
+                }
+            }
+            
             ans.pop();
         }
     }
