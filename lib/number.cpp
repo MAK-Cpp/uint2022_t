@@ -82,7 +82,6 @@ uint2022_t operator+(const uint2022_t& lhs, const uint2022_t& rhs) {
 
 uint2022_t operator-(const uint2022_t& lhs, const uint2022_t& rhs) {
     if (rhs > lhs) {
-        // std::cout << "OPERATOR - ";
         errorExit();
     }
     uint2022_t ans;
@@ -111,7 +110,6 @@ uint2022_t operator-(const uint2022_t& lhs, const uint2022_t& rhs) {
 uint2022_t operator*(const uint2022_t& lhs, const uint2022_t& rhs) {
     uint2022_t ans;
     if (lhs.first_non_zero_bit + rhs.first_non_zero_bit >= 2022) {
-        // std::cout << "OPERATOR * ";
         errorExit();
     }
     for (uint16_t lhs_block_id = 0; lhs_block_id <= (lhs.first_non_zero_bit >> 3); ++lhs_block_id) {
@@ -250,56 +248,46 @@ bool operator>(const uint2022_t& lhs, const uint2022_t& rhs) {
 }
 
 std::ostream& operator<<(std::ostream& stream, const uint2022_t& value) {
-    // вывод в двоичном формате, переделать
-    const bool is_in_binary = false;
-    if (is_in_binary) {
-        for (int16_t i = value.first_non_zero_bit; i >= 0; i--) {
-            stream << ((value.big_uint[(i >> 3)] & kBitByID[(i & 7)]) == kBitByID[(i & 7)]);
-        }
+    const uint2022_t zero;
+    if (value == zero) {
+        stream << 0;
+        return stream;
     }
-    else {
-        const uint2022_t zero;
-        if (value == zero) {
-            stream << 0;
-            return stream;
+    uint2022_t value_copy = value;
+    const uint2022_t base_ans = from_string("1000000000000000000");
+    std::stack <uint64_t> ans;
+    while (value_copy > zero) {
+        std::pair <uint2022_t, uint2022_t> get_ans_in_pair = value_copy % base_ans;
+        uint2022_t next_value = get_ans_in_pair.first;
+        uint2022_t cif = get_ans_in_pair.second;
+        value_copy = next_value;
+        uint64_t add = 0;
+        for (int16_t i = (cif.first_non_zero_bit >> 3); i >= 0; --i) {
+            add = (add << 8) + reverseBlock(cif.big_uint[i]);
         }
-        uint2022_t value_copy = value;
-        const uint2022_t base_ans = from_string("1000000000000000000");
-        std::stack <uint64_t> ans;
-        while (value_copy > zero) {
-            std::pair <uint2022_t, uint2022_t> get_ans_in_pair = value_copy % base_ans;
-            uint2022_t next_value = get_ans_in_pair.first;
-            uint2022_t cif = get_ans_in_pair.second;
-            value_copy = next_value;
-            uint64_t add = 0;
-            for (int16_t i = (cif.first_non_zero_bit >> 3); i >= 0; --i) {
-                add = (add << 8) + reverseBlock(cif.big_uint[i]);
-            }
-            ans.push(add);
-        }
-        bool is_first = true;
-        uint64_t len_of_num = 100000000000000000;
-        while (!ans.empty()) {
-            if (is_first) {
+        ans.push(add);
+    }
+    bool is_first = true;
+    uint64_t len_of_num = 100000000000000000;
+    while (!ans.empty()) {
+        if (is_first) {
+            stream << ans.top();
+            is_first = false;
+        } else {
+            if (ans.top() >= len_of_num) {
                 stream << ans.top();
-                is_first = false;
             } else {
-                if (ans.top() >= len_of_num) {
-                    stream << ans.top();
-                } else {
-                    while (ans.top() < len_of_num) {
-                        stream << 0;
-                        len_of_num /= 10;
-                    }
-                    stream << ans.top();
-                    len_of_num = 100000000000000000;
+                while (ans.top() < len_of_num) {
+                    stream << 0;
+                    len_of_num /= 10;
                 }
+                stream << ans.top();
+                len_of_num = 100000000000000000;
             }
-            
-            ans.pop();
         }
+        
+        ans.pop();
     }
-    
 
     return stream;
 }
