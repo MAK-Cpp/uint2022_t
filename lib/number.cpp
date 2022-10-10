@@ -24,7 +24,7 @@ uint8_t reverseBlock(const uint8_t& block) {
 }
 
 void deleteFirstZeroBits(uint2022_t& value) {
-    uint16_t block_id = (((value.big_uint.size() << 3) - 1) >> 3);
+    uint16_t block_id = (((value.big_uint_size << 3) - 1) >> 3);
     while (value.big_uint[block_id] == 0 && block_id > 0) {
         block_id--;
     }
@@ -185,7 +185,7 @@ uint2022_t operator/(const uint2022_t& lhs, const uint2022_t& rhs) {
 }
 
 
-std::pair <uint2022_t, uint2022_t> operator%(const uint2022_t& lhs, const uint2022_t& rhs) {
+std::pair<uint2022_t, uint2022_t> operator%(const uint2022_t& lhs, const uint2022_t& rhs) {
     uint2022_t ans;
     if (rhs > lhs) {
         return {ans, lhs};
@@ -257,7 +257,7 @@ std::ostream& operator<<(std::ostream& stream, const uint2022_t& value) {
     const uint2022_t base_ans = from_string("1000000000000000000");
     std::stack <uint64_t> ans;
     while (value_copy > zero) {
-        std::pair <uint2022_t, uint2022_t> get_ans_in_pair = value_copy % base_ans;
+        std::pair<uint2022_t, uint2022_t> get_ans_in_pair = value_copy % base_ans;
         uint2022_t next_value = get_ans_in_pair.first;
         uint2022_t cif = get_ans_in_pair.second;
         value_copy = next_value;
