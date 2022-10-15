@@ -5,23 +5,19 @@
 #include <vector> 
 #include <ctime>
 #include <stack>
+#include <cstdio>
 #include <algorithm>
 
-#define _ << ' ' <<
-#define ent '\n'
 
 struct uint2022_t {
     // будем хранить число справа налево, т.е. чем больше
     // block_id, тем больше число
     // 123 = 01111011 -> big_uint[0] = 11011110
-    std::vector<uint8_t> big_uint;
+    uint8_t big_uint[253] = {};
+    uint16_t big_uint_size = 253;
 
-    uint16_t first_non_zero_bit;
+    uint16_t first_non_zero_bit = 0;
 
-    uint2022_t() {
-        big_uint.resize(253, 0);
-        first_non_zero_bit = 0;
-    }
     /*
     253 блока по 8 бит = 2024 бит -> 0 <= first_non_zero_bit <= 2023
     
