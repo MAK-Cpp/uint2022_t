@@ -50,3 +50,10 @@ tests/
 bin/CMakeFiles
 lib/CMakeFiles
 CTestTestfile.cmake
+.idea/.gitignore
+.idea/.name
+.idea/labwork2-N4R1CK.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+compile_commands.json
