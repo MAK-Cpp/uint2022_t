@@ -13,8 +13,9 @@ struct uint2022_t {
     // будем хранить число справа налево, т.е. чем больше
     // block_id, тем больше число
     // 123 = 01111011 -> big_uint[0] = 11011110
-    // uint8_t* big_uint = new uint8_t[253];
-    uint8_t* big_uint;
+    
+    // uint8_t big_uint[253] = {};
+    uint8_t* big_uint = nullptr;
     uint16_t size_in_bytes;
     uint16_t size_in_bits;
 
@@ -22,7 +23,7 @@ struct uint2022_t {
 
     uint2022_t(const uint16_t& cnt_bits = 2022) {
         size_in_bits = cnt_bits;
-        size_in_bytes = (size_in_bits + 7) >> 3;
+        size_in_bytes = ((cnt_bits + 7) >> 3);
         big_uint = new uint8_t[size_in_bytes];
         for (uint16_t i = 0; i < size_in_bytes; ++i) {
             big_uint[i] = 0;
@@ -32,6 +33,20 @@ struct uint2022_t {
 
     ~uint2022_t() {
         delete[] big_uint;
+    }
+
+    uint2022_t& operator=(const uint2022_t& other) {
+        if (other.big_uint != big_uint) { 
+            delete big_uint;
+            size_in_bits = other.size_in_bits;
+            size_in_bytes = other.size_in_bytes;
+            big_uint = new uint8_t[size_in_bytes];
+            first_non_zero_bit = other.first_non_zero_bit;
+            for (uint16_t i = 0; i < size_in_bytes; ++i) {
+                big_uint[i] = other.big_uint[i];
+            }
+        }
+        return *this;
     }
 
     /*
@@ -58,6 +73,7 @@ struct uint2022_t {
     */
 };
 
+void EXTRACOUT(const uint2022_t& a);
 
 static_assert(sizeof(uint2022_t) <= 300, "Size of uint2022_t must be no higher than 300 bytes");
 
