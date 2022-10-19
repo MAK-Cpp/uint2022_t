@@ -9,47 +9,13 @@
 #include <algorithm>
 
 
+
 struct uint2022_t {
-    // будем хранить число справа налево, т.е. чем больше
-    // block_id, тем больше число
-    // 123 = 01111011 -> big_uint[0] = 11011110
-    
-    // uint8_t big_uint[253] = {};
-    uint8_t* big_uint = nullptr;
-    uint16_t size_in_bytes;
-    uint16_t size_in_bits;
-
-    uint16_t first_non_zero_bit;
-
-    uint2022_t(const uint16_t& cnt_bits = 2022) {
-        size_in_bits = cnt_bits;
-        size_in_bytes = ((cnt_bits + 7) >> 3);
-        big_uint = new uint8_t[size_in_bytes];
-        for (uint16_t i = 0; i < size_in_bytes; ++i) {
-            big_uint[i] = 0;
-        }
-        first_non_zero_bit = 0;
-    }
-
-    ~uint2022_t() {
-        delete[] big_uint;
-    }
-
-    uint2022_t& operator=(const uint2022_t& other) {
-        if (other.big_uint != big_uint) { 
-            delete big_uint;
-            size_in_bits = other.size_in_bits;
-            size_in_bytes = other.size_in_bytes;
-            big_uint = new uint8_t[size_in_bytes];
-            first_non_zero_bit = other.first_non_zero_bit;
-            for (uint16_t i = 0; i < size_in_bytes; ++i) {
-                big_uint[i] = other.big_uint[i];
-            }
-        }
-        return *this;
-    }
-
     /*
+    будем хранить число справа налево, т.е. чем больше
+    block_id, тем больше число
+    123 = 01111011 -> big_uint[0] = 11011110
+    
     253 блока по 8 бит = 2024 бит -> 0 <= first_non_zero_bit <= 2023
     
     каждый блок - число в 8 бит, т.е. с каждым битом можно работать так:
@@ -71,6 +37,53 @@ struct uint2022_t {
         3) узнаем значение бита месте по пункту I:
         = block & kBitByID[bit_id];
     */
+    uint8_t* big_uint = nullptr;
+    uint16_t size_in_bytes;
+    uint16_t size_in_bits;
+
+    uint16_t first_non_zero_bit;
+
+    uint2022_t(const uint16_t& cnt_bits = 2022) {
+        size_in_bits = cnt_bits;
+        size_in_bytes = ((cnt_bits + 7) >> 3);
+        big_uint = new uint8_t[size_in_bytes];
+        for (uint16_t i = 0; i < size_in_bytes; ++i) {
+            big_uint[i] = 0;
+        }
+        first_non_zero_bit = 0;
+    }
+
+    uint2022_t(const uint2022_t& other) {
+        size_in_bits = other.size_in_bits;
+        size_in_bytes = other.size_in_bytes;
+        big_uint = new uint8_t[size_in_bytes];
+        for (uint16_t i = 0; i < size_in_bytes; ++i) {
+            big_uint[i] = other.big_uint[i];
+        }
+        first_non_zero_bit = other.first_non_zero_bit;
+    }
+
+    ~uint2022_t() {
+        if (big_uint != nullptr) {
+            delete[] big_uint;
+        }
+    }
+
+    uint2022_t& operator=(const uint2022_t& other) {
+        if (other.big_uint != big_uint) { 
+            delete[] big_uint;
+            size_in_bits = other.size_in_bits;
+            size_in_bytes = other.size_in_bytes;
+            big_uint = new uint8_t[size_in_bytes];
+            first_non_zero_bit = other.first_non_zero_bit;
+            for (uint16_t i = 0; i < size_in_bytes; ++i) {
+                big_uint[i] = other.big_uint[i];
+            }
+        }
+        return *this;
+    }
+
+    
 };
 
 void EXTRACOUT(const uint2022_t& a);
@@ -86,8 +99,6 @@ uint2022_t operator+(const uint2022_t& lhs, const uint2022_t& rhs);
 uint2022_t operator-(const uint2022_t& lhs, const uint2022_t& rhs);
 
 uint2022_t operator*(const uint2022_t& lhs, const uint2022_t& rhs);
-
-uint2022_t operator^(const uint2022_t& lhs, const uint32_t& rhs);
 
 uint2022_t operator<<(const uint2022_t& value, const uint16_t& len);
 
