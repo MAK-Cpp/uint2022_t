@@ -11,7 +11,7 @@ project(
 set(CMAKE_CXX_STANDARD 17)
 
 
-if (NOT TARGET lin)
+if (NOT TARGET number)
     add_subdirectory(lib)
 endif()
 add_subdirectory(bin)
