@@ -10,7 +10,10 @@ project(
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_subdirectory(lib)
+
+if (NOT TARGET lin)
+    add_subdirectory(lib)
+endif()
 add_subdirectory(bin)
 
 enable_testing()
